@@ -1,192 +1,65 @@
-# AskAI - AI-Powered CV Analyzer and Interactive Interviewer
+# AskAI
 
-An intelligent recruitment tool that leverages Google's Gemini AI to analyze CVs and conduct adaptive technical interviews with real-time feedback and scoring.
+AskAI is a local web application for CV-informed text interviews. Candidates can practice for a chosen role or use a recruiter-created interview link. Recruiters can configure a rubric and review completed assessments from a separate private dashboard link.
 
-## 🚀 Features
+The application uses a React and TypeScript frontend, a FastAPI backend, SQLite, PDF text extraction with `pdfplumber`, and Gemini for structured CV analysis, question generation, answer evaluation, and final reports.
 
-### CV Analysis
-- **PDF Text Extraction**: Automatically extracts text from PDF resumes
-- **AI-Powered Analysis**: Uses Google Gemini AI to analyze technical skills, experience, and achievements
-- **Skill Assessment**: Rates technical skills on a 1-5 scale
-- **Improvement Suggestions**: Identifies areas for professional development
-- **Question Generation**: Creates relevant interview questions based on CV content
+## Design preview
 
-### Interactive Interviewing
-- **Adaptive Questioning**: Dynamic question generation based on candidate responses
-- **Real-time Evaluation**: Instant scoring on technical accuracy and communication
-- **Difficulty Adjustment**: Automatically adjusts question difficulty based on performance
-- **Project-Based Questions**: Focuses on practical experience and problem-solving
-- **Comprehensive Feedback**: Detailed evaluation with improvement suggestions
+- [Editable Figma design](https://www.figma.com/design/4CUq6F9G0TNCzi9uazqTFC)
+- [Desktop candidate prototype](https://www.figma.com/proto/4CUq6F9G0TNCzi9uazqTFC/AskAI?node-id=1-2)
+- [Mobile candidate prototype](https://www.figma.com/proto/4CUq6F9G0TNCzi9uazqTFC/AskAI?node-id=2-2)
+- [Desktop recruiter prototype](https://www.figma.com/proto/4CUq6F9G0TNCzi9uazqTFC/AskAI?node-id=1-38)
+- [Mobile recruiter prototype](https://www.figma.com/proto/4CUq6F9G0TNCzi9uazqTFC/AskAI?node-id=2-69)
+- [Desktop screen preview](docs/figma-desktop-preview.png) and [mobile screen preview](docs/figma-mobile-preview.png)
 
-### Results Management
-- **JSON Export**: Saves detailed interview results and analysis
-- **Summary Reports**: Generates concise interview summaries
-- **Historical Data**: Maintains records of all interviews conducted
-- **Structured Scoring**: Consistent evaluation metrics across all interviews
+The Figma file contains candidate and recruiter screens at desktop and mobile sizes, linked prototype actions, and a small editable UI kit. The web app follows the same visual direction.
 
-## 📋 Requirements
+## Run locally
 
-- Python 3.7+
-- Google Gemini API Key
-- PDF files for CV analysis
+Requires Python 3.10+, Node.js 20+, and a Gemini API key. From the repository root:
 
-## 🛠️ Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yadukrishnagiri/askai.git
-   cd askai
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Set up environment variables**
-   Create a `.env` file in the project root:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   ```
-
-4. **Get Gemini API Key**
-   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Generate a new API key
-   - Add it to your `.env` file
-
-## 🎯 Usage
-
-### Basic Usage
-
-1. **Prepare your CV**: Place your PDF resume in the `data/` directory
-
-2. **Run the application**:
-   ```bash
-   python main.py
-   ```
-
-3. **Follow the prompts**:
-   - Enter the position you're applying for
-   - The system will analyze your CV
-   - Participate in the interactive interview
-   - Review your results
-
-### CV Analysis Output
-
-The system provides:
-- **Technical Skills**: Rated 1-5 stars (★★★★★)
-- **Years of Experience**: Extracted from CV content
-- **Key Achievements**: Highlighted accomplishments
-- **Improvement Areas**: Suggestions for skill development
-- **Interview Questions**: Tailored questions for your profile
-
-### Interview Process
-
-- **Adaptive Difficulty**: Questions start basic and adjust based on performance
-- **Real-time Feedback**: Immediate scoring and suggestions after each answer
-- **Project Focus**: Emphasis on practical experience and problem-solving
-- **Professional Evaluation**: Technical accuracy and communication assessment
-
-## 📁 Project Structure
-
-```
-askai/
-├── main.py              # Main application file
-├── requirements.txt     # Python dependencies
-├── README.md           # Project documentation
-├── .env                # Environment variables (create this)
-├── data/               # Directory for CV files
-│   └── *.pdf          # Place your CV files here
-└── Result/            # Interview results and summaries
-    ├── interview_*.json
-    └── interview_summary.json
+```powershell
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
-## 🔧 Configuration
+Set `GEMINI_API_KEY` in `.env`. Then start the backend and frontend in separate terminals:
 
-### CV File Path
-Update the PDF path in `main.py` (line ~420):
-```python
-pdf_path = r"path/to/your/cv.pdf"
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn backend.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### Results Directory
-Modify the results directory in `_save_results()` method:
-```python
-results_dir = r"your/preferred/results/directory"
+```powershell
+cd frontend
+npm install
+npm run dev
 ```
 
-### Interview Settings
-Adjust interview parameters in `InteractiveInterviewer` class:
-- `max_questions`: Maximum number of questions (default: 10)
-- `timeout`: API timeout in seconds (default: 300)
-- `difficulty_levels`: Question difficulty progression
+Open [http://127.0.0.1:5173](http://127.0.0.1:5173). The frontend proxies `/api` requests to the backend. API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
-## 📊 Sample Output
+For a local walkthrough without an API key, set `ASKAI_DEMO_MODE=true` in `.env`. The interface clearly labels this mode; generated analysis and scores are illustrative and should not be used for hiring decisions.
 
-### CV Analysis
-```
-CV Analysis Results
-============================================================
+## Main flows
 
-Technical Skills:
-  • Python               ★★★★☆
-  • Machine Learning      ★★★☆☆
-  • Data Analysis        ★★★★★
-  • SQL                   ★★★☆☆
+1. A candidate chooses a role or opens a recruiter link, enters a name, and uploads a text-based PDF CV (maximum 10 MB).
+2. The backend extracts text in memory, deletes the uploaded file data after processing, and asks Gemini for a structured CV analysis.
+3. The interview asks custom, role-coverage, and follow-up questions. It adjusts difficulty using previous answers and saves progress after every submission.
+4. The candidate sees coaching and answer-level feedback at the end. A recruiter sees a separate assessment, evidence, and rubric scores through a private dashboard link.
 
-Years of Experience: 3
+Recruiter links work only while the local server is reachable. There are no accounts in this demo. Treat candidate session URLs and recruiter dashboard URLs as private access links. The database is stored at `backend/askai.sqlite3` by default and is excluded from Git.
 
-Key Achievements:
-  • Developed ML model improving accuracy by 25%
-  • Led team of 5 developers on data pipeline project
-  • Published research paper on NLP applications
+## Tests
 
-Areas for Improvement:
-  • Advanced machine learning algorithms
-  • Cloud deployment experience
-  • System design knowledge
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+cd frontend
+npm run build
 ```
 
-### Interview Feedback
-```
-Question 1 (basic):
-Could you describe your most technically challenging project?
+The backend tests cover an entire recruiter-link interview, report access separation, score persistence, invalid PDF input, and missing Gemini configuration.
 
-Feedback:
-Technical Accuracy: 8/10
-Communication: 7/10
-Feedback: Good explanation of technical challenges. Consider providing more details about specific implementation decisions.
-```
+## Legacy script
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-1. Check the [Issues](https://github.com/yadukrishnagiri/askai/issues) page
-2. Create a new issue with detailed description
-3. Include error messages and system information
-
-## 🔮 Future Enhancements
-
-- [ ] Support for multiple CV formats (Word, text files)
-- [ ] Integration with video interview capabilities
-- [ ] Advanced analytics and reporting dashboard
-- [ ] Multi-language support
-- [ ] Integration with ATS systems
-- [ ] Batch processing for multiple candidates
-
----
-
-**Note**: This tool is designed to assist in the recruitment process and should be used as a supplementary tool alongside human judgment in hiring decisions.
+`main.py` is the original command-line experiment and remains in the repository for reference. The web application runs through `backend.app` and `frontend/`.

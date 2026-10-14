@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+backend/askai.sqlite3
+backend/*.sqlite3-*
